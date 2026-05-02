@@ -94,6 +94,14 @@ function App() {
     setMode("input");
   };
 
+  const formatTo3Decimals = (value) => {
+    const num = Number(value);
+    if (!Number.isFinite(num)) {
+      return value;
+    }
+    return num.toFixed(3).replace(/\.?0+$/, "");
+  };
+
   return (
     <div style={styles.container}>
       <h1 style={styles.title}>献立最適化アプリ</h1>
@@ -182,7 +190,7 @@ function App() {
                         {nutritionLabels[k]}
                       </span>
                       <span style={styles.nutritionValue}>
-                        {day.nutrition[k]} {nutritionUnits[k]}
+                        {formatTo3Decimals(day.nutrition[k])} {nutritionUnits[k]}
                       </span>
                     </div>
                   ))}
