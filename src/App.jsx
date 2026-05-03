@@ -110,6 +110,36 @@ function App() {
     }));
   };
 
+  const getCategoryStyle = (category) => {
+    const base = {
+      display: "inline-block",
+      width: "60px",
+      textAlign: "center",
+      padding: "4px 6px",
+      borderRadius: "8px",
+      color: "white",
+      fontSize: "12px",
+      fontWeight: "bold",   
+    };
+
+    switch (category) {
+      case "主食":
+        return { ...base, background: "#ff9800" };
+      case "主菜":
+        return { ...base, background: "#e91e63" };
+      case "副菜":
+        return { ...base, background: "#4caf50" };
+      case "汁物":
+        return { ...base, background: "#2196f3" };
+      case "デザート":
+        return { ...base, background: "#9c27b0" };
+      case "飲み物":
+        return { ...base, background: "#607d8b" };
+      case "その他":
+        return { ...base, background: "#795548" };
+    }
+  };
+
   return (
     <div style={styles.container}>
       <h1 style={styles.title}>献立最適化アプリ</h1>
@@ -172,7 +202,9 @@ function App() {
                   {day.recipes.map((recipe, idx) => (
                     <li key={idx} style={styles.recipeCard}>
                       <div style={styles.recipeHeader}>
-                        <span style={styles.categoryTag}>{recipe.category}</span>
+                        <span style={getCategoryStyle(recipe.category)}>
+                          {recipe.category}
+                        </span>
                         <span style={styles.recipeTitle}>{recipe.title}</span>
                       </div>
 
@@ -406,12 +438,12 @@ const styles = {
     width: "80%",
     textAlign: "center",
     marginTop: "5px",
-    padding: "12px 14px",   // ← 大きくする（重要）
-    borderRadius: "14px",   // ← 角丸大きめ
+    padding: "12px 14px",   
+    borderRadius: "14px",  
     border: "none",
     background: "#f1f2f6",
     cursor: "pointer",
-    fontSize: "15px",       // ← 文字大きくする
+    fontSize: "15px",      
     fontWeight: "bold",
   },
 
