@@ -3,25 +3,26 @@ import { useState } from "react";
 function App() {
   const [menu, setMenu] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [openNutrition, setOpenNutrition] = useState({});
 
   // 画面切り替え用
   const [mode, setMode] = useState("input"); // "input" or "result"
 
   // 入力値（デフォルト値）
   const [params, setParams] = useState({
-    cost: 1186.65,
-    energy: 514,
-    protein: 20,
-    fat: 10.25,
-    calcium: 123,
-    magnesium: 29,
+    cost: 1490,
+    energy: 650,
+    protein: 26.8,
+    fat: 18.05,
+    calcium: 350,
+    magnesium: 50,
     iron: 3,
-    zinc: 1.2,
-    VA: 122,
-    VB1: 0.32,
-    VB2: 0.09,
-    VC: 23,
-    sodium: 0.8,
+    zinc: 2,
+    VA: 200,
+    VB1: 0.4,
+    VB2: 0.4,
+    VC: 25,
+    sodium: 1,
     dietaryfiber: 4.5,
   });
 
@@ -102,6 +103,13 @@ function App() {
     return num.toFixed(3).replace(/\.?0+$/, "");
   };
 
+  const toggleNutrition = (day) => {
+    setOpenNutrition((prev) => ({
+      ...prev,
+      [day]: !prev[day],
+    }));
+  };
+
   return (
     <div style={styles.container}>
       <h1 style={styles.title}>献立最適化アプリ</h1>
@@ -156,7 +164,7 @@ function App() {
                 <h2 style={styles.dayTitle}>{day.day}日目</h2>
 
                 <p style={styles.costText}>
-                  💰 費用: {day.cost.toFixed(2)} 円
+                  費用: {day.cost.toFixed(2)} 円
                 </p>
 
                 <h3 style={styles.sectionTitle}>🍴 献立</h3>
@@ -182,19 +190,36 @@ function App() {
                   ))}
                 </ul>
 
-                <h3 style={styles.sectionTitle}>📌 栄養素</h3>
-                <div style={styles.nutritionList}>
-                  {Object.keys(day.nutrition).map((k) => (
-                    <div key={k} style={styles.nutritionRow}>
-                      <span style={styles.nutritionLabel}>
-                        {nutritionLabels[k]}
-                      </span>
-                      <span style={styles.nutritionValue}>
-                        {formatTo3Decimals(day.nutrition[k])} {nutritionUnits[k]}
-                      </span>
-                    </div>
-                  ))}
-                </div>
+                <button onClick={() => toggleNutrition(day.day)} style={styles.nutritionToggle}>
+                  {openNutrition[day.day] ? "▼ 栄養素を隠す" : "▶ 栄養素を表示"}
+                </button>
+
+                {openNutrition[day.day] && (
+                  <div style={styles.nutritionList}>
+                    {Object.keys(day.nutrition).map((k) => {
+                      const actual = day.nutrition[k];
+                      const target = params[k];
+                      const ratio = Math.abs(actual - target) / target;  
+                      const isOk = ratio <= 0.2;
+
+                      return (
+                      <div key={k} style={isOk ? styles.nutritionRowOk : styles.nutritionRowNg}>
+                        <span style={styles.nutritionLabel}>
+                          {nutritionLabels[k]}
+                        </span>
+                        <span style={styles.nutritionValue}>
+                          {formatTo3Decimals(day.nutrition[k])} {nutritionUnits[k]}
+                          {!isOk && (
+                            <span style={{marginLeft: "8px", color: "red", fontSize: "12px"}}>
+                              (目標未達成)
+                            </span>
+                          )}
+                        </span>
+                      </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -225,6 +250,8 @@ const styles = {
     padding: "20px",
     borderRadius: "12px",
     boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+    maxWidth: "700px",
+    width: "100%",
   },
 
   subtitle: {
@@ -298,6 +325,7 @@ const styles = {
     display: "grid",
     gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
     gap: "16px",
+    alignItems: "start",
   },
 
   resultCard: {
@@ -374,21 +402,44 @@ const styles = {
     marginBottom: "4px",
   },
 
+  nutritionToggle: {
+    width: "80%",
+    textAlign: "center",
+    marginTop: "5px",
+    padding: "12px 14px",   // ← 大きくする（重要）
+    borderRadius: "14px",   // ← 角丸大きめ
+    border: "none",
+    background: "#f1f2f6",
+    cursor: "pointer",
+    fontSize: "15px",       // ← 文字大きくする
+    fontWeight: "bold",
+  },
+
   nutritionList: {
     display: "flex",
     flexDirection: "column",
-    gap: "6px",
+    gap: "4px",
     marginTop: "8px",
   },
 
-  nutritionRow: {
+  nutritionRowOk: {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    padding: "8px 10px",
+    padding: "6px 10px",
     borderRadius: "8px",
     background: "#f2f6ff",
     border: "1px solid #dbe6ff",
+  },
+
+  nutritionRowNg: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: "6px 10px",
+    borderRadius: "8px",
+    background: "#ffecec",
+    border: "1px solid #ffb3b3",
   },
 
   nutritionLabel: {
