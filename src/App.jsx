@@ -10,7 +10,7 @@ function App() {
 
   // 入力値（デフォルト値）
   const [params, setParams] = useState({
-    cost: 1575,
+    cost: 515,
     energy: 650,
     protein: 26.8,
     fat: 18.05,
@@ -27,7 +27,7 @@ function App() {
   });
 
   const nutritionLabels = {
-    cost: "費用（5日合計）",
+    cost: "費用",
     energy: "エネルギー",
     protein: "たんぱく質",
     fat: "脂質",
@@ -60,8 +60,23 @@ function App() {
     dietaryfiber: "g",
   };
 
+  const totalNutrition = {};
+  menu.forEach((day) => {
+    Object.entries(day.nutrition).forEach(([key, value]) => {
+      totalNutrition[key] = (totalNutrition[key] || 0) + Number(value);
+    });
+  });
+
+  const totalCost = menu.reduce(
+    (sum, day) => sum + day.cost,
+    0
+  );
+
   const handleChange = (key, value) => {
-    setParams({ ...params, [key]: Number(value) });
+    setParams({ 
+      ...params, 
+      [key]: value === "" ? "" : Number(value),
+    });
   };
 
   const handleOptimize = async () => {
@@ -228,11 +243,35 @@ function App() {
 
                 {openNutrition[day.day] && (
                   <div style={styles.nutritionList}>
-                    {Object.keys(day.nutrition).map((k) => {
-                      const actual = day.nutrition[k];
-                      const target = params[k];
-                      const ratio = Math.abs(actual - target) / target;  
-                      const isOk = ratio <= 0.2;
+                    {Object.keys(day.nutrition)
+                      .filter((k) => ["energy", "protein", "fat"].includes(k))
+                      .map((k) => {
+                        const actual = day.nutrition[k];
+
+                        const energy = day.nutrition.energy;
+                        const protein = day.nutrition.protein;
+                        const fat = day.nutrition.fat;
+
+                        const proteinRatio = (protein * 4) / energy;
+                        const fatRatio = (fat * 9) / energy;
+
+                        const energyOk =
+                          energy >= 570 &&
+                          energy <= 730;
+
+                        const proteinOk =
+                          proteinRatio >= 0.13 &&
+                          proteinRatio <= 0.20;
+
+                        const fatOk =
+                          fatRatio >= 0.20 &&
+                          fatRatio <= 0.35;
+
+                        let isOk = true;
+
+                        if (k === "energy") isOk = energyOk;
+                        if (k === "protein") isOk = proteinOk;
+                        if (k === "fat") isOk = fatOk;
 
                       return (
                       <div key={k} style={isOk ? styles.nutritionRowOk : styles.nutritionRowNg}>
@@ -254,6 +293,78 @@ function App() {
                 )}
               </div>
             ))}
+            {/* 5日間平均栄養価 */}
+            <div style={styles.summaryCard}>
+              <h2 style={styles.dayTitle}>
+                5日間平均値
+              </h2>
+              <p style={styles.costText}>
+                費用: {(totalCost / 5).toFixed(2)} 円
+              </p>
+              <div style={styles.nutritionList}>
+                {Object.keys(totalNutrition)
+                  .filter(
+                    (k) => !["energy", "protein", "fat"].includes(k)
+                  )
+                  .map((k) => {
+                    const average = totalNutrition[k]/5;
+                    
+                    let isOk = true;  
+
+                    if (k === "VB1") {
+                      isOk = average >= 0.3;
+                    }
+
+                    if (k === "calcium") {
+                      isOk = average >= 250;
+                    }
+
+                    if (k === "iron") { 
+                      isOk = average >= 1.5;
+                    }
+
+                    if (k === "sodium") {
+                      isOk = average < 3;
+                    }
+
+                    else if (params[k] !== undefined) {
+                      isOk = average >= params[k];
+                    }
+                    return (
+                      <div
+                        key={k}
+                        style={
+                          isOk
+                            ? styles.nutritionRowOk
+                            : styles.nutritionRowNg
+                        }
+                      >
+                        <span style={styles.nutritionLabel}>
+                          {nutritionLabels[k]}
+                        </span>
+
+                        <span style={styles.nutritionValue}>
+                          {formatTo3Decimals(average)}
+                          {" "}
+                          {nutritionUnits[k]}
+
+                          {!isOk && (
+                            <span
+                              style={{
+                                marginLeft: "8px",
+                                color: "red",
+                                fontSize: "12px",
+                              }}
+                            >
+                              (目標未達成)
+                            </span>
+                          )}
+                        </span>
+                      </div>
+                    );
+                  })}
+              </div>
+            </div>
           </div>
         </div>
       )}
@@ -365,6 +476,14 @@ const styles = {
     padding: "18px",
     borderRadius: "12px",
     boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+  },
+
+  summaryCard: {
+  background: "#fffef5",
+  border: "2px solid #ffd54f",
+  padding: "18px",
+  borderRadius: "12px",
+  boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
   },
 
   dayTitle: {
