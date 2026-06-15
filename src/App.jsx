@@ -10,7 +10,7 @@ function App() {
 
   // 入力値（デフォルト値）
   const [params, setParams] = useState({
-    cost: 515,
+    cost: 315,
     energy: 650,
     protein: 26.8,
     fat: 18.05,
