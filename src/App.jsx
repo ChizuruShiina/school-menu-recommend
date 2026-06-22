@@ -39,7 +39,7 @@ function App() {
     VB1: "ビタミンB1",
     VB2: "ビタミンB2",
     VC: "ビタミンC",
-    sodium: "食塩",
+    sodium: "食塩相当量",
     dietaryfiber: "食物繊維",
   };
 
