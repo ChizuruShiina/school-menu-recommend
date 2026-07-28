@@ -315,15 +315,15 @@ function App() {
                       isOk = average >= 0.3;
                     }
 
-                    if (k === "calcium") {
+                    else if (k === "calcium") {
                       isOk = average >= 250;
                     }
 
-                    if (k === "iron") { 
+                    else if (k === "iron") { 
                       isOk = average >= 1.5;
                     }
 
-                    if (k === "sodium") {
+                    else if (k === "sodium") {
                       isOk = average < 3;
                     }
 
